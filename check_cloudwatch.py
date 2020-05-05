@@ -42,7 +42,7 @@ class CloudWatchMetric(CloudWatchBase):
             return []
 
         stat = stats[0]
-        return [nagiosplugin.Metric('cloudwatchmetric', stat[self.statistic], stat['Unit'])]
+        return [nagiosplugin.Metric('cloudwatchmetric', stat[self.statistic])]
 
 class CloudWatchRatioMetric(nagiosplugin.Resource):
 
