@@ -209,8 +209,7 @@ def main():
 
     check = nagiosplugin.Check(
             metric,
-            nagiosplugin.ScalarContext('cloudwatchmetric', args.warning, args.critical),
-            summary)
+            nagiosplugin.ScalarContext('cloudwatchmetric', args.warning, args.critical))
     check.main(verbose=args.verbose)
 
 if __name__ == "__main__":
