@@ -60,9 +60,10 @@ class CloudWatchRatioMetric(nagiosplugin.Resource):
 
 class CloudWatchDeltaMetric(CloudWatchBase):
 
-    def __init__(self, namespace, metric, dimensions, statistic, period, lag, delta, region, profile):
+    def __init__(self, namespace, metric, dimensions, statistic, period, lag, delta, delta_count, region, profile):
         super(CloudWatchDeltaMetric, self).__init__(namespace, metric, dimensions, statistic, period, lag, region, profile)
         self.delta = delta
+        self.delta_count = delta_count
 
     def probe(self):
         logging.info('getting stats from cloudwatch')
@@ -84,8 +85,12 @@ class CloudWatchDeltaMetric(CloudWatchBase):
         datapoint1_stat = datapoint1_stats[0]
         datapoint2_stat = datapoint2_stats[0]
         num_delta = datapoint2_stat[self.statistic] - datapoint1_stat[self.statistic]
-        per_delta = (100 / datapoint2_stat[self.statistic]) * num_delta
-        return [nagiosplugin.Metric('cloudwatchmetric', per_delta, '%')]
+
+        if not self.delta_count:
+            per_delta = (100 / datapoint2_stat[self.statistic]) * num_delta
+            return [nagiosplugin.Metric('cloudwatchmetric', per_delta, '%')]
+        else:
+            return [nagiosplugin.Metric('cloudwatchmetric', num_delta)]
 
 class CloudWatchMetricSummary(nagiosplugin.Summary):
 
@@ -181,6 +186,8 @@ def main():
 
     argp.add_argument('--delta', type=int,
                       help='time in seconds to build a delta mesurement')
+    argp.add_argument('--delta-count', default=False, action='store_true',
+                      help='return total count of delta instead of ratio')
 
     argp.add_argument('-w', '--warning', metavar='RANGE', default=0,
                       help='warning if threshold is outside RANGE')
@@ -201,7 +208,7 @@ def main():
         metric = CloudWatchRatioMetric(args.namespace, args.metric, args.dimensions, args.statistic, args.period, args.lag, args.divisor_namespace,  args.divisor_metric, args.divisor_dimensions, args.divisor_statistic, args.region, args.profile)
         summary = CloudWatchMetricRatioSummary(args.namespace, args.metric, args.dimensions, args.statistic, args.divisor_namespace,  args.divisor_metric, args.divisor_dimensions, args.divisor_statistic)
     elif args.delta:
-        metric = CloudWatchDeltaMetric(args.namespace, args.metric, args.dimensions, args.statistic, args.period, args.lag, args.delta, args.region, args.profile)
+        metric = CloudWatchDeltaMetric(args.namespace, args.metric, args.dimensions, args.statistic, args.period, args.lag, args.delta, args.delta_count, args.region, args.profile)
         summary = CloudWatchDeltaMetricSummary(args.namespace, args.metric, args.dimensions, args.statistic, args.delta)
     else:
         metric = CloudWatchMetric(args.namespace, args.metric, args.dimensions, args.statistic, args.period, args.lag, args.region, args.profile)
