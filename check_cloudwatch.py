@@ -60,8 +60,8 @@ class CloudWatchRatioMetric(nagiosplugin.Resource):
 
 class CloudWatchDeltaMetric(CloudWatchBase):
 
-    def __init__(self, namespace, metric, dimensions, statistic, period, lag, delta, region):
-        super(CloudWatchDeltaMetric, self).__init__(namespace, metric, dimensions, statistic, period, lag, region)
+    def __init__(self, namespace, metric, dimensions, statistic, period, lag, delta, region, profile):
+        super(CloudWatchDeltaMetric, self).__init__(namespace, metric, dimensions, statistic, period, lag, region, profile)
         self.delta = delta
 
     def probe(self):
